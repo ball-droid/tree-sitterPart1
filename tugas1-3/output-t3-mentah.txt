@@ -1,0 +1,79 @@
+=== 1. semua.scm: (identifier) @id ===
+@id  baris 2: sys
+@id  baris 9: nama
+@id  baris 13: a
+@id  baris 10: nama
+@id  baris 14: a
+@id  baris 15: total
+@id  baris 7: sapa
+@id  baris 13: jumlah
+@id  baris 19: Alat
+@id  baris 24: berhenti
+@id  baris 3: pathlib
+@id  baris 14: b
+@id  baris 13: b
+@id  baris 15: print
+@id  baris 20: self
+@id  baris 24: self
+@id  baris 26: print
+@id  baris 4: os
+@id  baris 3: Path
+@id  baris 9: print
+@id  baris 16: total
+@id  baris 13: c
+@id  baris 20: jalan
+@id  baris 1: os
+@id  baris 4: path
+@id  baris 7: nama
+@id  baris 14: total
+@id  baris 14: c
+@id  baris 22: print
+@id  baris 24: paksa
+@id  baris 25: paksa
+
+=== 2. fungsi.scm: nama fungsi ===
+@nama  baris 7: sapa
+@nama  baris 24: berhenti
+@nama  baris 13: jumlah
+@nama  baris 20: jalan
+
+=== 3. fungsi-param.scm (mode matches): nama + jumlah parameter ===
+-- match 1 --
+@nama  baris 7: sapa
+@params  baris 7: (nama)
+>>> sapa: 1 parameter
+-- match 2 --
+@nama  baris 13: jumlah
+@params  baris 13: (a, b, c=0)
+>>> jumlah: 3 parameter
+-- match 3 --
+@nama  baris 20: jalan
+@params  baris 20: (self)
+>>> jalan: 1 parameter
+-- match 4 --
+@nama  baris 24: berhenti
+@params  baris 24: (self, paksa)
+>>> berhenti: 2 parameter
+
+=== 4. print.scm: pemanggilan print(...) ===
+@fn  baris 9: print
+@fn  baris 26: print
+@fn  baris 22: print
+@fn  baris 15: print
+@args  baris 9: ("halo", nama)
+@args  baris 22: ("jalan")
+@args  baris 15: (total)
+@args  baris 26: ("berhenti paksa")
+
+=== 5. import.scm: import + nama modul ===
+@impor  baris 1: import os
+@impor  baris 4: from os import path
+@impor  baris 3: from pathlib import Path
+@impor  baris 2: import sys
+@modul  baris 1: os
+@modul  baris 4: os
+@modul  baris 2: sys
+@modul  baris 3: pathlib
+
+=== 6. docstring.scm [pengayaan] ===
+@doc  baris 8: """Sapa satu orang."""

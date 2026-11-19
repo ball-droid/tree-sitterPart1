@@ -1,0 +1,67 @@
+Tugas 3 — Query pertama: hitungan manual vs hasil query
+=======================================================
+
+File uji: tugas1-3/contoh.py (struktur sudah dilihat lebih dulu dengan
+jelajah.py sebelum query ditulis).
+
+HITUNGAN MANUAL (dibuat dengan membaca contoh.py baris per baris)
+-----------------------------------------------------------------
+a. Jumlah identifier per baris:
+   L1 os=1 | L2 sys=1 | L3 pathlib,Path=2 | L4 os,path=2
+   L7 sapa,nama=2 | L8 (string, bukan identifier)=0 | L9 print,nama=2
+   L10 nama=1 | L13 jumlah,a,b,c=4 | L14 total,a,b,c=4
+   L15 print,total=2 | L16 total=1 | L19 Alat=1 | L20 jalan,self=2
+   L21 (komentar)=0 | L22 print=1 | L24 berhenti,self,paksa=3
+   L25 paksa=1 | L26 print=1
+   TOTAL MANUAL = 31 identifier.
+   Hasil query semua.scm: 31 capture @id. COCOK (31 = 31).
+
+b. Fungsi + jumlah parameter (parameter dihitung sebagai named child
+   dari node parameters):
+   - baris 7  sapa(nama)          -> 1 parameter
+   - baris 13 jumlah(a, b, c=0)   -> 3 parameter (c=0 berupa
+     default_parameter, tetap 1 named child)
+   - baris 20 jalan(self)         -> 1 parameter
+   - baris 24 berhenti(self,paksa)-> 2 parameter
+   TOTAL MANUAL = 4 fungsi.
+   Hasil query fungsi-param.scm (mode matches): 4 match dengan
+   >>> sapa: 1 parameter / jumlah: 3 parameter / jalan: 1 parameter /
+       berhenti: 2 parameter. COCOK.
+
+c. Pemanggilan print(...): baris 9, 15, 22, 26 -> TOTAL MANUAL = 4.
+   Hasil query print.scm: 4 capture @fn (baris 9, 15, 22, 26) dengan
+   @args-nya ("halo", nama), (total), ("jalan"), ("berhenti paksa").
+   COCOK.
+
+d. Import / from-import beserta nama modul:
+   - baris 1 import os            -> modul os
+   - baris 2 import sys           -> modul sys
+   - baris 3 from pathlib import Path -> modul pathlib
+   - baris 4 from os import path  -> modul os
+   TOTAL MANUAL = 4 statement, modul: os, sys, pathlib, os.
+   Hasil query import.scm: 4 capture @impor dan 4 capture @modul
+   (os, sys, pathlib, os). COCOK.
+
+e. [Pengayaan] docstring (string sebagai ekspresi pertama body fungsi):
+   - sapa baris 8 """Sapa satu orang.""" -> 1
+   - jumlah: ekspresi pertama = assignment (total = ...) -> bukan
+   - jalan: ekspresi pertama = print("jalan") -> bukan (komentar
+     # TODO ternyata anak function_definition, bukan anak block)
+   TOTAL MANUAL = 1.
+   Hasil query docstring.scm: 1 capture @doc (baris 8). COCOK.
+
+CATATAN PENTING (aturan "jangan menebak nama node")
+---------------------------------------------------
+Nama node import TIDAK ditebak: file impor.py di-parse dengan
+jelajah.py dulu, dan hasilnya menunjukkan:
+  import_statement [1:0]        -> name: dotted_name
+  import_from_statement [2:0]   -> module_name: dotted_name
+                                   name: dotted_name
+Dari situlah query import.scm ditulis. Perhatikan beda field:
+`module_name:` untuk modul yang di-import, `name:` untuk simbol yang
+di-import — tebakan tanpa melihat pohon hampir pasti salah di sini.
+
+KESIMPULAN: semua hasil query cocok dengan hitungan manual pada file
+uji contoh.py (31 identifier, 4 fungsi dengan jumlah parameter benar,
+4 pemanggilan print, 4 import dengan nama modul benar, 1 docstring).
+

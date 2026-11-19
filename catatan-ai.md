@@ -54,3 +54,31 @@ kesalahan/kekurangan hasil AI yang ditemukan, (3) bukti verifikasinya.
    baris 127 `class SessionRedirectMixin:`, `name: identifier [127:6]`
    vs kolom 6).
 
+## Tugas 3 — Query pertama
+
+1. Diminta ke AI: membuat `q.py` (penjalang query dari kerangka materi,
+   mode `captures` dan `matches`), lalu menulis query untuk (a) semua
+   identifier, (b) nama fungsi + jumlah parameter, (c) pemanggilan
+   `print(...)`, (d) import/from-import + nama modul, (e) [pengayaan]
+   docstring — dan memverifikasinya dengan hitungan manual pada
+   `contoh.py`.
+2. Kesalahan/kekurangan hasil AI yang ditemukan:
+   - Kerangka `q.py` dari materi memakai `n.text.decode()`; salinan
+     pertama AI mempertahankannya sehingga Pyright menandai `text`
+     bisa `None` (3 error `reportOptionalMemberAccess`). Diperbaiki
+     dengan `(n.text or b"").decode(errors="replace")`.
+   - Tanpa melihat pohon, query import hampir pasti salah: AI harus
+     benar-benar menjalankan `jelajah.py` pada `impor.py` untuk tahu
+     bahwa `from x import y` memakai field `module_name:` untuk modul
+     dan `name:` untuk simbol. Query yang menebak field `name:` untuk
+     modul akan menghasilkan `Path`/`path` (simbol), bukan modulnya.
+   - Pengecekan awal AI mengasumsikan komentar `# TODO` berada di
+     dalam `block` (sehingga bisa menggeser "baris pertama body");
+     hasil `jelajah.py` menunjukkan `comment` justru anak langsung
+     `function_definition`, di antara `parameters` dan `body` —
+     asumsi itu salah dan dikoreksi dari pohon.
+3. Bukti verifikasi: `tugas1-3/output-t3.txt` memuat hitungan manual
+   per baris (31 identifier, 4 fungsi: sapa=1, jumlah=3, jalan=1,
+   berhenti=2 parameter; 4 print; 4 import; 1 docstring) yang semuanya
+   cocok dengan hasil query di `output-t3-mentah.txt`.
+
