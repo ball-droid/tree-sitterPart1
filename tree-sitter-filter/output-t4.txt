@@ -1,0 +1,139 @@
+Tugas 4 — Grammar DSL filter: log langkah demi langkah
+======================================================
+
+Semua langkah: edit grammar.js -> tree-sitter generate ->
+tree-sitter parse <input>, output aktual dicatat apa adanya di bawah.
+(tree-sitter test --update TIDAK pernah dipakai.)
+
+LANGKAH AWAL — query -> comparison -> identifier = string
+input: status = "open"
+(query [0, 0] - [1, 0]
+  (comparison [0, 0] - [0, 15]
+    (identifier [0, 0] - [0, 6])
+    (string [0, 9] - [0, 15])))
+= persis (query (comparison (identifier) (string))) sesuai target materi.
+
+LANGKAH 4a — operator !=, >, <, >=, <= + rule number
+input: priority >= 2
+(query
+  (comparison
+    (identifier)
+    (number)))
+
+LANGKAH 4b — _expr, and_expression, word: $.identifier
+Catatan penting: generate GAGAL tanpa prec — konflik muncul di sini,
+bukan di 4c seperti diperkirakan materi. Pesan aktual:
+    Unresolved conflict for symbol sequence:
+      _expr  'and'  _expr  •  'and'  …
+    Possible interpretations:
+      1:  (and_expression  _expr  'and'  _expr)  •  'and'  …
+      2:  _expr  'and'  (and_expression  _expr  •  'and'  _expr)
+    Possible resolutions:
+      1:  Specify a left or right associativity in `and_expression`
+      2:  Add a conflict for these rules: `and_expression`
+Ditambahkan prec.left(2, ...) lalu generate sukses.
+input: a = 1 and b = 2
+(query
+  (and_expression
+    (comparison (identifier) (number))
+    (comparison (identifier) (number))))
+
+LANGKAH 4c — or_expression TANPA prec dulu -> konflik aktual:
+    Unresolved conflict for symbol sequence:
+      _expr  'or'  _expr  •  'or'  …
+    Possible interpretations:
+      1:  (or_expression  _expr  'or'  _expr)  •  'or'  …
+      2:  _expr  'or'  (or_expression  _expr  •  'or'  _expr)
+Lalu prec.left(1, ...) ditambahkan (prioritas or=1 < and=2).
+input: a = 1 or b = 2 and c = 3
+(query
+  (or_expression
+    (comparison (identifier) (number))
+    (and_expression
+      (comparison (identifier) (number))
+      (comparison (identifier) (number)))))
+= terkelompok a = 1 or (b = 2 and c = 3). SESUAI TARGET.
+
+LANGKAH 4d — parenthesized
+input: (a = 1 or b = 2) and c = 3
+(query
+  (and_expression
+    (parenthesized
+      (or_expression
+        (comparison (identifier) (number))
+        (comparison (identifier) (number))))
+    (comparison (identifier) (number))))
+
+LANGKAH 4e — not_expression + boolean
+input: not archived = true
+(query
+  (not_expression
+    (comparison (identifier) (boolean))))
+
+LANGKAH 4f — field(...) pada child penting
+(comparison: field/operator/value; and/or: left/right; not: operand)
+input: a = 1 or b = 2 and c = 3
+(query
+  (or_expression
+    left: (comparison
+      field: (identifier)
+      value: (number))
+    right: (and_expression
+      left: (comparison
+        field: (identifier)
+        value: (number))
+      right: (comparison
+        field: (identifier)
+        value: (number)))))
+Label field sudah muncul. Tes corpus dilengkapi label field juga.
+
+TAMBAHAN — in_expression + contains_expression
+input: status in ("open", "pending", "closed")
+(query
+  (in_expression
+    field: (identifier)
+    values: (string) values: (string) values: (string)))
+input: title contains "invoice"
+(query
+  (contains_expression
+    field: (identifier)
+    value: (string)))
+Catatan: field('values', seq(...)) dari petunjuk materi ternyata
+memberi label `values:` pada SEMUA anak seq — termasuk token anonim
+'(' ',' ')' (tidak terlihat di S-expression, ketahuan saat dipakai
+where_sql.py). Diperbaiki di where_sql.py dengan filter is_named.
+
+HASIL tree-sitter test (8/8 lulus):
+dasar:
+  1. ✓ perbandingan sederhana
+  2. ✓ operator >= dengan angka
+  3. ✓ and dua perbandingan
+  4. ✓ prioritas and lebih kuat dari or
+  5. ✓ kurung mengubah prioritas
+  6. ✓ not dengan nilai boolean
+  7. ✓ in dengan tiga nilai
+  8. ✓ contains mencari teks
+Total parses: 8; successful parses: 8; failed parses: 0.
+
+[PENGAYAAN] Hapus semua prec sementara -> pesan konflik aktual
+tersimpan di konflik-tanpa-prec.txt (dipulihkan setelahnya; tes
+8/8 lulus lagi): konflik 'not' _expr • 'and' antara and_expression
+dan not_expression, dengan saran "Specify a higher precedence".
+
+[PENGAYAAN] where_sql.py — pohon -> klausa WHERE SQL parameterized
+input contoh.filter:
+  status = "open" and (priority > 2 or owner = "budi") and
+  not archived = true and title contains "invoice" and
+  state in ("new", "open", "pending") and score >= 4.5
+output:
+  WHERE: ((((status = ? AND (priority > ? OR owner = ?)) AND
+  NOT (archived = ?)) AND title LIKE ?) AND state IN (?, ?, ?))
+  AND score >= ?
+  PARAMS: ['open', 2, 'budi', True, '%invoice%', 'new', 'open',
+  'pending', 4.5]
+Pengecekan manual: 8 nilai input -> 8 parameter, urutan kiri-kanan
+cocok, tidak ada nilai literal yang masuk ke teks SQL, tanda kurung
+input dipertahankan, LIKE membungkus nilai dengan %...%.
+input: a = 1 or b = 2 and c = 3
+  WHERE: a = ? OR (b = ? AND c = ?)   PARAMS: [1, 2, 3]
+= pengelompokan prioritas tetap benar di SQL.

@@ -82,3 +82,41 @@ kesalahan/kekurangan hasil AI yang ditemukan, (3) bukti verifikasinya.
    berhenti=2 parameter; 4 print; 4 import; 1 docstring) yang semuanya
    cocok dengan hasil query di `output-t3-mentah.txt`.
 
+## Tugas 4 — Grammar DSL filter
+
+1. Diminta ke AI: membuat proyek grammar `filter` (tree-sitter init),
+   membangun grammar bertahap (awal, 4a–4f) dengan generate+parse per
+   langkah, menambah `in`/`contains`, menulis test corpus (minimal 5),
+   memastikan `tree-sitter test` lulus semua termasuk prioritas
+   and/or, plus pengayaan demo konflik tanpa prec dan skrip WHERE SQL
+   parameterized.
+2. Kesalahan/kekurangan hasil AI yang ditemukan:
+   - Percobaan pertama demo "hapus semua prec" TIDAK mengubah
+     grammar.js sama sekali (penulisan file ditolak karena konten
+     terdeteksi masih berisi prefix tampilan read_file), sehingga
+     `generate` yang diklaim jalan sebenarnya memakai grammar lama
+     tanpa konflik. Ketahuan dari error tool write + hasil generate
+     yang mustahil bersih; diulang lewat terminal dengan backup dan
+     menghasilkan konflik nyata (konflik-tanpa-prec.txt).
+   - `field('values', seq('(', $._value, repeat(...), ')'))` dari
+     petunjuk materi rupanya melabeli SEMUA anak seq dengan field
+     `values:`, termasuk token anonim `(`, `,`, `)` — versi pertama
+     where_sql.py memasukkan token itu sebagai parameter (13 parameter
+     alih-alih 8). Ditemukan dengan menjalankan where_sql.py pada
+     contoh.filter dan mencocokkan jumlah parameter dengan jumlah
+     nilai input; diperbaiki dengan filter `c.is_named`.
+   - Pertama AI mengira konflik associativity akan muncul di langkah
+     4c (seperti uraian materi); kenyataannya `and_expression` sudah
+     konflik di 4b sehingga `prec.left(2, ...)` harus dipasang lebih
+     awal. Dicatat apa adanya di output-t4.txt.
+   - Tool tulis-file berulang kali menolak overwrite dengan alasan
+     "stale view" meski file sudah dibaca penuh — AI sempat
+     mengulang tanpa perubahan (loop); diselesaikan dengan
+     menghapus file via terminal lalu menulis sebagai file baru.
+3. Bukti verifikasi: `tree-sitter-filter/output-t4.txt` (log tiap
+   langkah berisi input, pohon aktual, pesan konflik asli),
+   `tree-sitter test` 8/8 lulus (termasuk tes `a = 1 or b = 2 and c = 3`
+   yang terkelompok `a = 1 or (b = 2 and c = 3)` dan `in` tiga nilai),
+   `konflik-tanpa-prec.txt`, serta output where_sql.py yang
+   dicocokkan manual dengan jumlah nilai di input (8 = 8).
+

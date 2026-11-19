@@ -1,0 +1,1 @@
+status = "open" and (priority > 2 or owner = "budi") and not archived = true and title contains "invoice" and state in ("new", "open", "pending") and score >= 4.5
