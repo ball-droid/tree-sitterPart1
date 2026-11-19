@@ -1,0 +1,77 @@
+Tugas 1 — Pohon PERKIRAAN (ditulis sebelum menjalankan parser)
+==============================================================
+
+Catatan: di bawah ini adalah tebakan struktur pohon sebelum menjalankan
+t1.py. Hasil aktual ada di output-t1.txt dan dibandingkan per potongan.
+
+Kasus dasar dari materi — x = 1
+-------------------------------
+(module
+  (expression_statement
+    (assignment
+      left: (identifier)
+      right: (integer))))
+
+Potongan 1 — fungsi
+-------------------
+def sapa(nama):
+    return nama
+
+Perkiraan:
+(module
+  (function_definition
+    name: (identifier)
+    parameters: (parameters (identifier))
+    body: (block
+      (return_statement (identifier)))))
+
+Potongan 2 — if/else
+--------------------
+if x > 0:
+    print("positif")
+else:
+    print("negatif")
+
+Perkiraan:
+(module
+  (if_statement
+    condition: (comparison_operator
+      left: (identifier)
+      right: (integer))
+    consequence: (block
+      (expression_statement
+        (call
+          function: (identifier)
+          arguments: (argument_list (string)))))
+    alternative: (else_clause
+      body: (block
+        (expression_statement
+          (call
+            function: (identifier)
+            arguments: (argument_list (string))))))))
+
+Potongan 3 — kelas dengan satu method
+-------------------------------------
+class Kalkulator:
+    def tambah(self, a, b):
+        return a + b
+
+Perkiraan:
+(module
+  (class_definition
+    name: (identifier)
+    body: (block
+      (function_definition
+        name: (identifier)
+        parameters: (parameters (identifier) (identifier) (identifier))
+        body: (block
+          (return_statement
+            (binary_operator
+              left: (identifier)
+              right: (identifier))))))))
+
+Bagian yang kurang yakin saat menulis perkiraan:
+- Apakah `self` di daftar parameter hanya `(identifier)` biasa atau node
+  khusus (mis. `self_parameter`) — akan diperiksa di hasil aktual.
+- Nama node perbandingan `x > 0`: apakah `comparison_operator` atau
+  `comparison` — akan diperiksa di hasil aktual.

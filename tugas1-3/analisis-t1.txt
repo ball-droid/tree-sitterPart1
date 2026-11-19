@@ -1,0 +1,59 @@
+BAGIAN C — PERBANDINGAN PERKIRAAN vs AKTUAL
+============================================
+
+1. kasus dasar `x = 1`
+   Aktual: (module (expression_statement (assignment left: (identifier) right: (integer))))
+   SAMA PERSIS dengan perkiraan dan dengan output contoh di materi.
+
+2. potongan 1 (fungsi `def sapa(nama)`)
+   Aktual: (module (function_definition name: (identifier) parameters: (parameters
+   (identifier)) body: (block (return_statement (identifier)))))
+   SAMA PERSIS dengan perkiraan.
+
+3. potongan 2 (if/else) — ADA 2 PERBEDAAN dengan perkiraan:
+   a. Saya memperkirakan `comparison_operator` punya field `left:` dan `right:`.
+      Aktual: (comparison_operator (identifier) (integer)) — TANPA label field,
+      jadi `x` dan `0` hanya child biasa di node ini. Perkiraan SALAH di sini.
+   b. Saya memperkirakan string cukup satu node `(string)`.
+      Aktual: (string (string_start) (string_content) (string_end)) — versi
+      grammar tree-sitter-python sekarang memecah string menjadi 3 bagian.
+      Perkiraan KURANG LENGKAP di sini.
+   Selebihnya (if_statement, consequence: (block ...), else_clause) sesuai perkiraan.
+
+4. potongan 3 (kelas dengan method)
+   Aktual: (module (class_definition name: (identifier) body: (block
+   (function_definition name: (identifier) parameters: (parameters (identifier)
+   (identifier) (identifier)) body: (block (return_statement (binary_operator
+   left: (identifier) right: (identifier))))))))
+   SAMA PERSIS dengan perkiraan. Keraguan saat menebak terjawab: `self` adalah
+   `(identifier)` biasa, BUKAN node khusus `self_parameter`.
+
+KESIMPULAN PERBANDINGAN: 2 dari 3 potongan sesuai perkiraan 100%; potongan
+if/else punya 2 selisih (field comparison_operator yang ternyata tidak ada,
+dan string yang terpecah menjadi string_start/content/end). Pelajaran: nama
+node DAN field harus dilihat dari pohon aktual, bukan ditebak — persis sesuai
+aturan kerja "lihat pohonnya dulu".
+
+5. Node anonim (minimal 3, hasil aktual):
+   - `def`  → anonim (di dalam function_definition)
+   - `:`    → anonim (di dalam function_definition)
+   - `(`    → anonim (di dalam parameters)
+   - `)`    → anonim (di dalam parameters)
+   Konfirmasi: `def` dan `:` tercetak sebagai anonim; `(` dan `)` memang satu
+   tingkat lebih dalam, di dalam node `parameters`.
+
+6. children vs named_children (contoh dari kode saya sendiri, node
+   function_definition pada potongan fungsi):
+   children      : ['def', 'identifier', 'parameters', ':', 'block']
+   named_children: ['identifier', 'parameters', 'block']
+   children = SEMUA anak termasuk node anonim (token `def` dan `:`).
+   named_children = hanya node bernama. Urutan named_children adalah subset
+   children dengan token anonim dibuang.
+
+7. Kasus ERROR/MISSING:
+   Kode `def sapa(nama)` (tanpa `:`) diparse menjadi
+   (module (ERROR (identifier) (parameters (identifier)) (identifier)))
+   dengan root.has_error = True, dan node ERROR ditemukan di baris 1:0.
+   Tree-sitter tetap menghasilkan pohon meski input tidak valid (error
+   recovery); bagian yang tidak bisa dibaca dibungkus node ERROR.
+

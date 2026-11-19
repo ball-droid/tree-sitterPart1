@@ -1,0 +1,32 @@
+=== kasus dasar: x = 1 ===
+(module (expression_statement (assignment left: (identifier) right: (integer))))
+
+=== potongan 1-fungsi ===
+(module (function_definition name: (identifier) parameters: (parameters (identifier)) body: (block (return_statement (identifier)))))
+
+=== potongan 2-if-else ===
+(module (if_statement condition: (comparison_operator (identifier) (integer)) consequence: (block (expression_statement (call function: (identifier) arguments: (argument_list (string (string_start) (string_content) (string_end)))))) alternative: (else_clause body: (block (expression_statement (call function: (identifier) arguments: (argument_list (string (string_start) (string_content) (string_end)))))))))
+
+=== potongan 3-kelas ===
+(module (class_definition name: (identifier) body: (block (function_definition name: (identifier) parameters: (parameters (identifier) (identifier) (identifier)) body: (block (return_statement (binary_operator left: (identifier) right: (identifier))))))))
+
+=== anak node function_definition (potongan fungsi) ===
+def anonim
+identifier bernama
+parameters bernama
+: anonim
+block bernama
+
+=== anak node parameters ===
+( anonim
+identifier bernama
+) anonim
+
+=== children vs named_children (function_definition) ===
+children      : ['def', 'identifier', 'parameters', ':', 'block']
+named_children: ['identifier', 'parameters', 'block']
+
+=== kode rusak: def sapa(nama) tanpa ':' ===
+(module (ERROR (identifier) (parameters (identifier)) (identifier)))
+ERROR node='ERROR' di baris 1:0
+root.has_error = True
