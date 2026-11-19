@@ -1,0 +1,59 @@
+Tugas 6 — cek.py: hasil verifikasi
+==================================
+
+1. Uji folder cek/uji/ (dibuat sendiri):
+   output-uji.txt:
+     uji\panjang.py:7: fungsi 'proses_data' 39 baris (>30)
+     uji\rusak.py: pohon bererror -- ERROR 'ERROR' di baris 3
+     uji\todo.js:2: // TODO: tambahkan validasi input
+     uji\todo.py:4: # TODO: tangani b = 0
+     uji\todo.py:9: # FIXME: escape karakter khusus
+   Pengecekan manual:
+   - todo.py: 2 komentar penanda (baris 4 TODO, baris 9 FIXME) = 2 temuan ✓
+   - todo.js: 1 komentar TODO (baris 2) = 1 temuan ✓
+   - panjang.py: def proses_data di baris 7, baris terakhir body
+     `return hasil` di baris 45 (file 45 baris) -> 45-7+1 = 39 baris,
+     COCOK dengan output; salam_singkat (baris 3-4) 2 baris, tidak
+     dilaporkan ✓
+   - rusak.py: `def rusak(nama)` tanpa ':' di baris 3 -> ERROR
+     dilaporkan di baris 3 ✓
+
+2. Uji pada repo open source nyata: psf/requests
+   (git clone https://github.com/psf/requests -> J:/treesitter/repo-uji/requests)
+   output: output-repo-requests.txt (63 temuan: TODO/FIXME dan fungsi
+   >30 baris; tidak ada file bererror).
+
+3. Verifikasi silang 2 file ACAK (dicek manual):
+   File acak dipilih dengan `ls .../*.py | shuf -n 2` ->
+   exceptions.py dan cookies.py.
+
+   a. requests/src/requests/exceptions.py
+      - grep "TODO|FIXME" manual: tidak ada -> cek.py juga tidak
+        melaporkan apa pun untuk file ini. COCOK.
+      - daftar def manual (baris 28, 45, 55) semuanya pendek (span
+        terpanjang 28..44 = 17 baris) -> tidak ada fungsi >30 baris;
+        cek.py juga tidak melaporkan. COCOK.
+      - python -m py_compile: OK (sintaks valid) -> cek.py tidak
+        melaporkan error. COCOK.
+
+   b. requests/src/requests/cookies.py
+      - grep "TODO|FIXME" manual: tidak ada -> cek.py tidak
+        melaporkan. COCOK.
+      - cek.py melaporkan tepat satu fungsi: create_cookie 35 baris
+        di baris 494. Manual: `def create_cookie` baris 494, baris
+        terakhir body `return cookielib.Cookie(**result)` baris 528
+        -> 528-494+1 = 35 baris. COCOK PERSIS.
+      - Fungsi dengan span terpanjang kedua: _find_no_duplicates
+        (def baris 423, akhir body `raise KeyError(...)` baris 452)
+        -> 30 baris, TIDAK lebih dari 30, jadi tidak dilaporkan —
+        batas ambang (>30, bukan >=30) bekerja benar. COCOK.
+      - python -m py_compile: OK -> tidak ada temuan error. COCOK.
+
+Catatan metode manual: "grep TODO|FIXME" mencocokkan semua baris,
+sedangkan cek.py hanya komentar; pada kedua file ini tidak ada TODO
+di dalam string, sehingga hasilnya setara.
+
+KESIMPULAN: tiga laporan (TODO/FIXME, fungsi >30 baris, file bererror)
+berjalan pada repo nyata dan hasilnya cocok dengan pengecekan manual
+pada 2 file acak (semua temuan terverifikasi benar, tidak ada yang
+terlewat pada kedua file tersebut).

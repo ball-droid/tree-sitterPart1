@@ -150,3 +150,38 @@ kesalahan/kekurangan hasil AI yang ditemukan, (3) bukti verifikasinya.
    "All highlight captures conform to standards."; ringkasan tabel di
    `tree-sitter-filter/output-t5.txt`.
 
+## Tugas 6 — Mini proyek cek.py
+
+1. Diminta ke AI: membuat `cek.py <folder>` dari kerangka materi
+   (fitur 1 TODO/FIXME sudah ada), menambah fitur 2 (fungsi >30 baris
+   via query+matches) dan fitur 3 (file bererror via has_error +
+   rekursi cari ERROR/MISSING), membuat folder `uji/`, mengujinya pada
+   repo open source nyata (psf/requests), memverifikasi 2 file acak
+   secara manual, menulis README, plus pengayaan dukungan JavaScript.
+2. Kesalahan/kekurangan hasil AI yang ditemukan:
+   - Draft query JS pertama memakai `name: (identifier)` untuk semua
+     fungsi; probe parse JS yang dijalankan lebih dulu menunjukkan
+     `method_definition` justru ber-field `property_identifier` —
+     draft itu akan SENYAP melewatkan semua method. Diperbaiki sebelum
+     dipakai, dengan query terpisah per jenis fungsi.
+   - Header file uji `todo.py` semula berbunyi "komentar TODO/FIXME"
+     sehingga komentar header itu IKUT terdeteksi (3 temuan, padahal
+     yang dimaksud 2) — membingungkan saat verifikasi manual.
+     Ketahuan karena jumlah temuan tidak cocok dengan hitungan manual;
+     header diganti dan jumlah menjadi 2 = 2.
+   - Perkiraan AI soal panjang fungsi `proses_data` meleset
+     (dikira ~47 baris); pengecekan manual span baris 7-45 membuktikan
+     39 baris — angka cek.py yang benar, perkiraan AI yang salah.
+   - Eksekusi shell berisi `cd` di dalam blok `{ ... } > file`
+     menyebabkan perintah `cat` di akhir berjalan di direktori lain
+     (path jadi tidak valid); output sebenarnya tersimpan, hanya
+     pembacaannya yang gagal — diperbaiki dengan path absolut.
+3. Bukti verifikasi: `cek/output-uji.txt` (output pada folder uji,
+   semua temuan cocok dengan hitungan manual), `cek/output-repo-requests.txt`
+   (63 temuan pada psf/requests), dan `cek/output-t6.txt` — verifikasi
+   silang 2 file ACAK (exceptions.py, cookies.py dipilih dengan `shuf`):
+   semua temuan cocok manual (create_cookie baris 494-528 = 35 baris
+   persis; _find_no_duplicates 423-452 = 30 baris tepat di ambang dan
+   benar tidak dilaporkan), plus `python -m py_compile` sebagai cek
+   independen bahwa kedua file memang tidak bererror.
+

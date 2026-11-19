@@ -1,0 +1,5 @@
+uji\panjang.py:7: fungsi 'proses_data' 39 baris (>30)
+uji\rusak.py: pohon bererror -- ERROR 'ERROR' di baris 3
+uji\todo.js:2: // TODO: tambahkan validasi input
+uji\todo.py:4: # TODO: tangani b = 0
+uji\todo.py:9: # FIXME: escape karakter khusus
