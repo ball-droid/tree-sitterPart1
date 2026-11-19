@@ -120,3 +120,33 @@ kesalahan/kekurangan hasil AI yang ditemukan, (3) bukti verifikasinya.
    `konflik-tanpa-prec.txt`, serta output where_sql.py yang
    dicocokkan manual dengan jumlah nilai di input (8 = 8).
 
+## Tugas 5 — Highlight untuk DSL filter
+
+1. Diminta ke AI: menyiapkan `tree-sitter init-config` + parser-directories,
+   memeriksa tree-sitter.json, membuat `queries/highlights.scm`
+   (dimulai dari `(string) @string`), menambahkan capture kata kunci
+   (termasuk `in`/`contains`), operator, string, angka, boolean, dan
+   nama field, lalu memverifikasi warna `tree-sitter highlight`.
+2. Kesalahan/kekurangan hasil AI yang ditemukan:
+   - AI mengira konfigurasi highlight cukup dengan queries/highlights.scm;
+     ternyata `tree-sitter highlight` memberi WARNING bahwa tree-sitter.json
+     perlu entri `"highlights": "queries/highlights.scm"` di objek grammar.
+     Bentuk key ini dikonfirmasi dari dokumentasi resmi bagian "Query Paths"
+     (bukan ditebak), lalu ditambahkan — warning hilang.
+   - Pada tema default, `@constant.builtin` (boolean) dan `@number`
+     terpetakan ke warna yang SAMA (94) sehingga `true` dan `2` tidak
+     terlihat beda — melanggar kriteria "setiap jenis token berwarna
+     berbeda". Ditemukan dengan membaca kode ANSI hasil `tree-sitter
+     highlight` (cat -v), diperbaiki dengan mengubah `constant.builtin`
+     ke warna 172 di tema config.json.
+   - Percobaan pertama menulis ulang highlights.scm ditolak tool tulis
+     file (stale view) dan AI sempat menulis output verifikasi ke path
+     yang salah karena `cd` di dalam blok shell mengubah direktori
+     kerja sebelum `cat` dijalankan; kedua hal diperbaiki (patch file,
+     lalu path absolut).
+3. Bukti verifikasi: `tree-sitter-filter/output-t5-mentah.txt` berisi
+   output ANSI penuh (warna per token terbaca: 124/239-tebal/28/56/
+   94-tebal/172-tebal/239) dan hasil `tree-sitter highlight --check`
+   "All highlight captures conform to standards."; ringkasan tabel di
+   `tree-sitter-filter/output-t5.txt`.
+

@@ -1,0 +1,52 @@
+Tugas 5 — Highlight untuk DSL filter: hasil verifikasi
+=====================================================
+
+Konfigurasi:
+1. `tree-sitter init-config` -> C:\Users\aaiqb\AppData\Roaming\tree-sitter\config.json
+   `parser-directories` ditambahi folder INDUK grammar:
+   "J:\\treesitter\\tree-sitterPart1" (berisi tree-sitter-filter/,
+   bukan folder grammar itu sendiri).
+2. tree-sitter.json: "file-types": ["filter"] sudah benar (hasil
+   tree-sitter init), dan ditambahkan key
+   "highlights": "queries/highlights.scm" di objek grammar — CLI
+   sebelumnya memberi warning bahwa entri ini harus ada (bentuknya
+   dikonfirmasi dari dokumentasi resmi bagian "Query Paths").
+3. queries/highlights.scm dibangun dari satu baris (string) @string
+   dulu — saat itu string sudah berwarna hijau, konfigurasi terbukti
+   benar — lalu ditambahkan capture lain satu per satu.
+
+Hasil `tree-sitter highlight contoh.filter` (dijalankan dari J:/treesitter,
+di LUAR folder grammar, membuktikan discovery via parser-directories).
+Kode ANSI di output-t5-mentah.txt; pemetaan warnanya:
+
+  token di contoh.filter        capture              warna (ANSI)
+  ---------------------------   ------------------   -------------
+  status/priority/owner/...     @property            38;5;124
+  =  >  >=                      @operator            tebal 38;5;239
+  "open" "budi" "invoice" ...   @string              38;5;28
+  and or not in contains        @keyword             38;5;56
+  2  4.5                        @number              tebal 38;5;94
+  true                          @constant.builtin    tebal 38;5;172
+  (  )  ,                       @punctuation.*       38;5;239
+
+Semua jenis token di file contoh berwarna BERBEDA satu sama lain:
+124 / 239-tebal / 28 / 56 / 94-tebal / 172-tebal / 239.
+Catatan: pada tema default bawaan init-config, @constant.builtin
+(boolean) dan @number kebetulan sama-sama warna 94, sehingga boolean
+diganti ke 172 di tema (config.json) agar terlihat beda.
+
+Verifikasi tambahan:
+- `tree-sitter query queries/highlights.scm contoh.filter`: setiap
+  token di contoh.filter ter-capture dengan nama yang benar
+  (tercatat di percobaan sebelumnya: 7 property, 3 operator,
+  6 string, 8 keyword, 2 number, 1 constant.builtin).
+- `tree-sitter highlight --check`:
+  "All highlight captures conform to standards." (exit 0)
+
+Checklist Tugas 5:
+- [x] capture kata kunci and/or/not/in/contains
+- [x] capture operator perbandingan (= != > < >= <=)
+- [x] capture string, angka, boolean
+- [x] capture nama field (comparison/in/contains field: identifier)
+- [x] tree-sitter highlight jalan, ekstensi .filter dikenali via
+      tree-sitter.json file-types, warna berbeda per jenis token
