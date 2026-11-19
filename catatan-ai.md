@@ -26,3 +26,31 @@ kesalahan/kekurangan hasil AI yang ditemukan, (3) bukti verifikasinya.
    100% dengan perkiraan. Kesalahan di atas ditemukan JUSTRU karena
    aturan "lihat pohonnya dulu, jangan menebak nama node/field".
 
+## Tugas 2 — Penjelajah node
+
+1. Diminta ke AI: mengisi `TODO` kerangka `jelajah.py` dari materi
+   (rekursi `enumerate(node.children)`, filter `is_named`,
+   `field_name_for_child(i)`), membuat versi pengayaan `TreeCursor`,
+   lalu mengujinya pada `kecil.py` dan file Python nyata >= 100 baris
+   (requests/src/requests/sessions.py, 920 baris) serta memverifikasi
+   output-nya.
+2. Kesalahan/kekurangan hasil AI yang ditemukan:
+   - AI menjalankan `jelajah.py` dengan argumen path gaya MSYS
+     (`/j/treesitter/...`) yang TIDAK bisa dibuka Python Windows native
+     (FileNotFoundError). Hasilnya kosong/traceback; harus diulang
+     dengan path native `J:/treesitter/...`.
+   - Percobaan verifikasi pertama AI memakai `grep "class Session"`
+     pada output jelajah — padahal output itu berisi TIPE node
+     (`class_definition`), bukan teks sumber. Pencocokan pertama nihil
+     dan salah arah; diperbaiki dengan meng-grep `class_definition`
+     lalu membandingkan angka baris/kolomnya ke baris sumber.
+   - (lint) `child_by_field_name()` mengembalikan Optional; kode awal
+     AI tidak menangani `None` (ditandai Pyright), diperbaiki dengan
+     assert eksplisit.
+3. Bukti verifikasi: `tugas1-3/output-t2.txt` — output `kecil.py` cocok
+   persis dengan contoh materi; `diff` versi rekursif vs TreeCursor
+   identik untuk kedua file uji; 5 pengecekan manual posisi/field ke
+   file sumber semuanya cocok (mis. `class_definition [127:0]` vs
+   baris 127 `class SessionRedirectMixin:`, `name: identifier [127:6]`
+   vs kolom 6).
+
